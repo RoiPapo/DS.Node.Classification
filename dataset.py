@@ -1,6 +1,9 @@
-#%%
+# %%
+import numpy as np
 import requests
 import os
+from sklearn.manifold import TSNE
+from matplotlib import pyplot as plt
 from torch_geometric.data import Dataset
 import torch
 
@@ -41,10 +44,56 @@ class HW3Dataset(Dataset):
         return torch.load(self.processed_paths[0])
 
 
+def visualize_latent_space(h, color):
+    z = TSNE(n_components=2).fit_transform(h.detach().cpu().numpy())
+    plt.figure(figsize=(10, 10))
+    plt.xticks([])
+    plt.yticks([])
+
+    plt.scatter(z[:, 0], z[:, 1], s=70, c=color, cmap="Set2")
+    plt.show()
+
+
+def plot_label_distribution(labels):
+    # Convert labels to a one-dimensional numpy array
+    labels = np.ravel(labels)
+
+    # Count the occurrences of each label
+    label_counts = np.bincount(labels)
+
+    # Get the unique labels
+    unique_labels = np.unique(labels)
+
+    # Calculate the percentage values
+    total_count = len(labels)
+    label_percentages = (label_counts / total_count) * 100
+
+    # Set the figure size
+    plt.figure(figsize=(10, 6))  # Adjust the width and height as desired
+
+    # Create a bar chart to visualize the label distribution
+    plt.bar(unique_labels, label_percentages)
+    plt.xlabel('Labels')
+    plt.ylabel('Percentage')
+    plt.title('Label Distribution')
+
+    # Add ticks to each bar
+    plt.xticks(unique_labels)
+
+    plt.show()
+
+
+def create_ds():
+    dataset = HW3Dataset(root='data/hw3/')
+    data = dataset[0]
+    return data
+
+
 if __name__ == '__main__':
     dataset = HW3Dataset(root='data/hw3/')
     data = dataset[0]
+    plot_label_distribution(data['y'])
+    # visualize_latent_space(data['x'][:10000],color=data['y'][:10000])
     print(data)
-
 
 # %%
