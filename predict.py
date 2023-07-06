@@ -13,11 +13,8 @@ def test():
         data[0].edge_index.to(device)
     )
     pred = out.argmax(dim=1).detach().cpu()
-    test_correct = pred[data[0]
-                        .val_mask] == data[0].y[data[0].val_mask].reshape(-1,)
-    test_acc = int(test_correct.sum()) / len(test_correct)
     
-    return test_acc, pred[data[0].val_mask], data[0].y[data[0].val_mask].reshape(-1,), pred
+    return pred
 
 import csv
 import torch
@@ -65,9 +62,9 @@ class GAT(torch.nn.Module):
         return x
 
 
-min_value=data[0].node_year[data[0].train_mask].min()
+min_value=data[0].node_year.min()
 
-diff = data[0].node_year[data[0].train_mask].max() - min_value 
+diff = data[0].node_year.max() - min_value 
 
 best_params={
         'heads':7,
@@ -89,12 +86,8 @@ state_dict = torch.load("Model.pt")
 model.load_state_dict(state_dict)
 model = model.to(device)
 print(model)
-optimizer = torch.optim.Adam(model.parameters(), lr=best_params["lr"]) 
-criterion = torch.nn.CrossEntropyLoss()
-test_acc, test_pred, test_true,pred = test()
-test_correct = pred[data[0]
-                        .val_mask] == data[0].y[data[0].val_mask].reshape(-1,)
-test_acc = int(test_correct.sum()) / len(test_correct)
+pred = test()
+
 create_prediction_csv(pred)
 
     
